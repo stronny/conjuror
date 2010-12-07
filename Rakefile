@@ -14,10 +14,10 @@ Jeweler::Tasks.new do |gem|
   # gem is a Gem::Specification... see http://docs.rubygems.org/read/chapter/20 for more options
   gem.name = "conjuror"
   gem.homepage = "http://github.com/stronny/conjuror"
-  gem.license = "MIT"
-  gem.summary = %Q{TODO: one-line summary of your gem}
-  gem.description = %Q{TODO: longer description of your gem}
-  gem.email = "stronny@gvfs.ru"
+  gem.license = "Public domain"
+  gem.summary = %Q{A daemonizer with plans to become something more}
+  gem.description = %Q{A daemonizer with plans to become something more}
+  gem.email = "stronny@celestia.ru"
   gem.authors = ["stronny"]
   # Include your dependencies below. Runtime dependencies are required when using your gem,
   # and development dependencies are only needed for development (ie running rake tasks, tests, etc)
