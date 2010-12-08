@@ -1,0 +1,24 @@
+#!/bin/bash
+
+function HUP () {
+	echo "Trapped HUP" >&2
+}
+
+function DOWN () {
+	echo "Got a signal, going down"
+	exit 0
+}
+
+trap HUP SIGHUP
+trap DOWN SIGINT SIGTERM SIGQUIT
+
+echo -n "Started as $0"
+for arg; do
+	echo -n " '$arg'"
+done
+echo
+
+while read; do
+	echo "OUT[$REPLY]"
+	echo "ERR[$REPLY]" >&2
+done

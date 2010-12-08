@@ -1,0 +1,12 @@
+# This is a YAML incantation for conjuror.
+#
+# Please, ident with spaces only!
+#
+command: './test1 123 * "123 123"'
+
+signals:
+  HUP:
+  - - send
+    - 'sending HUP'
+  - - kill
+    - HUP

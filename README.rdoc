@@ -1,6 +1,65 @@
 = conjuror
 
-Description goes here.
+In a nutshell, conjuror is an external daemonizer. Its main purpose is to detach from terminal
+(thus becoming a daemon), then set environment for a child, and then replace its own
+process with the one of a child (<tt>man 3 exec</tt>).
+
+== Operation
+
+First conjuror gathers the required information:
+* If started with argument(s), options are used for definitions and argument(s)
+  are collected to be passed to exec() intact.
+* If started without arguments, options are discared completely and an _incantation_
+  (with all the definitions and arguments inside) is read from STDIN.
+
+Once all the definitions are gathered the following steps are performed:
+* If user (and maybe group) is defined, conjuror tries to set its UID and GID accordingly
+  (most likely conjuror must be run as root to do that).
+* conjuror forks and detaches from its controlling terminal.
+* If umask and working directory are defined, conjuror tries to set them accordingly.
+* conjuror forks again (it's believed to be super effective, see for example:
+  http://stackoverflow.com/questions/881388/what-is-the-reason-for-performing-a-double-fork-when-creating-a-daemon).
+* If pidfile is defined, conjuror tries to dump its PID there.
+  Note that it won't be deleted automatically, because conjuror
+  will not be running after exec() anymore.
+* All environmental variables are set.
+* STDIN, STDOUT and STDERR are closed and then opened to /dev/null.
+* Finally, conjuror calls exec() passing it all the arguments defined.
+
+== Incantations
+
+An _incantation_ is an instruction for conjuror what process to execute and what environment
+for it to set. It consists of lines (delimited with <tt>\n</tt>, as in plain textfile),
+each containing a single definition. The order of everything is not important and everything
+is case-insensitive, unless stated otherwise.
+
+Please read the following carefully, it shall give you an insight on the parsing procedure.
+
+Every word that starts with / (a forward slash) shall be either a program or a pidfile. If the file
+exists and is executable, it is considered a program, otherwise it is a pidfile. Either of them may
+only be defined once. By the way, the program is the only mandatory definition, the rest are all optional.
+Both filenames are case-sensitive.
+
+== Examples
+
+  conjuror -u ntpd -g ntpd -e "USER=ntpd" -e "FOO=123 123" -- ntpd -S
+
+  In the name of nogroup, the mighty creatures who dwell inside the Earth
+  In the name of nobody, the colossal master of the Skies
+  The heritage at /var/run/riverine/spooler.pid awaits your return untouched
+  With your flaming sword shall you defend the weak
+  With your black shield shall you defeat the enemies
+  Arise, oh /usr/local/bin/riverinespoold!
+  Arise, oh ghostly shadow of a dead knight!
+
+  name ntpd
+  name ntpd
+  USER=ntpd
+  /var/run/openntpd.pid
+  /usr/sbin/ntpd
+  -d
+  -s
+  -f /etc/openntpd/ntpd.conf
 
 == Copyright
 
