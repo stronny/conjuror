@@ -2,13 +2,41 @@
 #
 # Please, ident with spaces only!
 #
+
+# The command to execute.
+#
+# No default, this key is mandatory!
+#
 command: './test1 123 * "123 123"'
 
+# Seconds to sleep in main cycle.
+#
+# Default: 0.1
+#
+sleep: 0.05
+
+# True: if a child exited with zero status, conjuror will not spawn another child,
+# and will exit also instead.
+#
+# False: conjuror will respawn the child no matter the exit status.
+#
+# Default: false
+#
+allow_to_die_peacefully: true
+
+#
+#
+#
+#
 SIGHUP: onHup
 SIGUSR1: onHup
 SIGUSR2: onHup
 KILL: deconstruct
 
+#
+#
+#
+#
 actions:
   onHup:
   - write: 'sending HUP'

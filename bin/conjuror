@@ -5,10 +5,13 @@ require('conjuror')
 
 unless ARGV[0] then
 	puts <<-EOH
-Usage: #{basename $0} <incantation>
+Usage: #{File.basename($0)} <incantation>
 	EOH
 	exit!(0)
 end
 
-incantation = YAML.load_file(ARGV[0])
-Conjuror.invoke!(incantation)
+LibRiverine::Output.maxlevel = 7
+LibRiverine::Output.strformat = '%1$s (%5$i) [%-3$5s] %4$s'
+
+
+Conjuror.invoke!(ARGV[0])

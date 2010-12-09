@@ -2,6 +2,9 @@ require('yaml')
 require('libriverine')
 
 module Conjuror
+	class << self
+		include LibRiverine::Output::Methods
+	end
 	include LibRiverine::Traps::Constants
 end
 

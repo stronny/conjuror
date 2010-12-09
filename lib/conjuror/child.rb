@@ -1,9 +1,20 @@
 module Conjuror
-	class Child
-		class << self
-			include LibRiverine::Output::Methods
+
+	private
+
+	def self.spawn_child()
+		if @dropdead then
+			debug('Asked to spawn the child, but the ending is near, so doing nothing')
+			return(true)
 		end
-		attr_reader(:pid, :stdout, :stderr)
+		@serial += 1
+		@child = Child.new(@incantation.command)
+		notice("Invoked a new child #{@child.pid} \##{@serial}")
+	end
+
+	class Child
+		include LibRiverine::Output::Methods
+		attr_reader(:pid, :stdout, :stderr, :time_started)
 
 		# Command may be either an array or a string. See Kernel.exec to know the difference.
 		#
@@ -20,8 +31,9 @@ module Conjuror
 			# Fork the child.
 			if pid = fork() then
 				#
-				# In a parent. Record the child's PID, manage the streams and detach() the child.
+				# In a parent. Record the child's PID and started time, then manage the streams.
 				@pid = pid
+				@time_started = Time.now()
 				#
 				# Close the ends of the pipes we don't need
 				for stream in [@stdin[:r], @stdout[:w], @stderr[:w]] do
@@ -35,9 +47,6 @@ module Conjuror
 				#
 				# Make sure the child's STDIN is not buffered
 				@stdin.sync = true
-				#
-				# Detach to avoid children's zombification
-				Process.detach(pid)
 			else
 				#
 				# In a child. First manage the streams.
@@ -51,7 +60,7 @@ module Conjuror
 				$stderr.sync = true
 				#
 				# And then run exec() with a class check.
-				case testclass = command.class
+				case command.class
 					when String then
 						debug("Running exec() with a string [#{command}]")
 						exec(command)
@@ -59,7 +68,8 @@ module Conjuror
 						debug("Running exec() with an array #{command.inspect}")
 						exec(*command)
 					else
-						error!("Wrong type of a command: #{testclass}, must be either String or Array")
+						exit!(Process.pid)
+#						error!("Wrong class of a command: #{command.class}, must be either String or Array")
 				end
 			end
 		end
@@ -76,6 +86,15 @@ module Conjuror
 		def writeln(buf)
 			write(buf)
 			write("\n")
+		end
+
+		# Sends a specified signal to the child (TERM by default)
+		#
+		def kill(sig = SIGTERM)
+			begin
+				Process.kill(sig, @pid)
+			rescue Errno::ESRCH
+			end
 		end
 
 	end

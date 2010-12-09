@@ -9,11 +9,10 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["stronny"]
-  s.date = %q{2010-12-07}
-  s.default_executable = %q{conjuror}
+  s.date = %q{2010-12-09}
   s.description = %q{A daemonizer with plans to become something more}
   s.email = %q{stronny@celestia.ru}
-  s.executables = ["conjuror"]
+  s.executables = ["test1.yml", "test1", "conjuror"]
   s.extra_rdoc_files = [
     "README.rdoc"
   ]
@@ -25,8 +24,16 @@ Gem::Specification.new do |s|
     "Rakefile",
     "VERSION",
     "bin/conjuror",
+    "bin/test1",
+    "bin/test1.yml",
     "conjuror.gemspec",
-    "lib/conjuror.rb"
+    "lib/conjuror.rb",
+    "lib/conjuror/child.rb",
+    "lib/conjuror/incantation.rb",
+    "lib/conjuror/invoke.rb",
+    "lib/conjuror/routes.rb",
+    "lib/conjuror/signals.rb",
+    "lib/conjuror/streams.rb"
   ]
   s.homepage = %q{http://github.com/stronny/conjuror}
   s.licenses = ["Public domain"]
