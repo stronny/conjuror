@@ -4,9 +4,16 @@
 #
 command: './test1 123 * "123 123"'
 
-signals:
-  HUP:
-  - - send
-    - 'sending HUP'
-  - - kill
-    - HUP
+SIGHUP: onHup
+SIGUSR1: onHup
+SIGUSR2: onHup
+KILL: deconstruct
+
+actions:
+  onHup:
+  - write: 'sending HUP'
+  - signal: HUP
+  deconstruct:
+  - signal: INT
+  - wait: 10
+  - signal: KILL

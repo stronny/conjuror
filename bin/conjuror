@@ -1,139 +1,14 @@
 #!/usr/bin/env ruby
 
-#require('optparse')
-#require('open3')
-require('yaml')
 require('rubygems')
-require('libriverine')
-#require('conjuror')
+require('conjuror')
 
-
-module Conjuror
-	include LibRiverine::Traps::Constants
-
-	class Child
-		attr_accessor(:pid, :stdin, :stdout, :stderr)
-		def initialize(options)
-			@stdin = {}
-			@stdin[:r], @stdin[:w] = IO.pipe()
-			@stdout = {}
-			@stdout[:r], @stdout[:w] = IO.pipe()
-			@stderr = {}
-			@stderr[:r], @stderr[:w] = IO.pipe()
-
-			if pid = fork() then
-				@pid = pid
-				@stdin[:r].close()
-				@stdout[:w].close()
-				@stderr[:w].close()
-				@stdin = @stdin[:w]
-				@stdout = @stdout[:r]
-				@stderr = @stderr[:r]
-				@stdin.sync = true
-				Process.detach(pid)
-			else
-				@stdin[:w].close()
-				@stdout[:r].close()
-				@stderr[:r].close()
-				$stdin.reopen(@stdin[:r])
-				$stdout.reopen(@stdout[:w])
-				$stderr.reopen(@stderr[:w])
-				$stdout.sync = true
-				$stderr.sync = true
-				exec(options['command'])
-			end
-
-
-		end
-	end
-
-
-	def self.invoke!(options)
-		LibRiverine::Traps.install!(
-			method(:down) => [SIGINT, SIGTERM, SIGQUIT],
-			method(:hup!) => SIGHUP,
-			method(:lost_child) => SIGCHLD,
-			method(:coup_de_grace) => SIGEXIT
-		)
-		@options = options
-		@dropdead = false
-		lost_child()
-		until @dropdead do
-			sleep(0.1)
-			for testsocket, processor in @sockets do
-				if selected = IO.select([testsocket], nil, nil, 0) then
-					sread, swrite, serr = selected
-					readsocket = sread.first
-					processor.call(readsocket)
-				end
-			end
-		end
-	end
-
-
-	private
-
-	def self.down(sig = nil)
-		if sig then
-			puts("Going down on #{SIGNALS[sig]}")
-		else
-			puts('Somebody set up us the bomb!')
-		end
-		Process.kill(SIGINT, @child.pid)
-		@dropdead = true
-	end
-
-	def self.coup_de_grace(sig = nil)
-		if sig then
-			puts("Just before the end on #{SIGNALS[sig]}")
-		else
-			puts('Exiting')
-		end
-	end
-
-	def self.hup!(sig = nil)
-		Process.kill(SIGHUP, @child.pid)
-	end
-
-	def self.lost_child(sig = nil)
-		@child = Child.new(@options)
-		if sig then
-			puts("Invoked a new child #{@child.pid} on #{SIGNALS[sig]}")
-		else
-			puts("Invoked a new child #{@child.pid}")
-		end
-		@sockets = {
-			$stdin        => method(:from_in),
-			@child.stdout => method(:from_out),
-			@child.stderr => method(:from_err)
-		}
-	end
-
-	def self.from_in(socket)
-#		begin
-			@child.stdin.write(socket.readpartial(2 ** 16))
-#		rescue
-#		end
-	end
-
-	def self.from_out(socket)
-#		begin
-			$stdout.write(socket.readpartial(2 ** 16))
-#		rescue
-#		end
-	end
-
-	def self.from_err(socket)
-#		begin
-			$stderr.write(socket.readpartial(2 ** 16))
-#		rescue
-#		end
-	end
-
+unless ARGV[0] then
+	puts <<-EOH
+Usage: #{basename $0} <incantation>
+	EOH
+	exit!(0)
 end
 
-
-Conjuror.invoke!(YAML.load_file(ARGV[0]))
-
-#trap('INT', Proc.new {|sig| puts "Caught INT"; exit(0)})
-
+incantation = YAML.load_file(ARGV[0])
+Conjuror.invoke!(incantation)
